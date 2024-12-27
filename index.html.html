@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Guessing Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+            background-color: #e6e7eb;
+            color: #333;
+            overflow: hidden;
+        }
+        h1 {
+            font-size: 3em;
+            color: #e5383b;
+            animation: slideIn 1s ease-in-out;
+        }
+        #word {
+            font-size: 2.5em;
+            letter-spacing: 10px;
+            margin: 20px;
+            animation: fadeIn 1.5s ease-in-out;
+        }
+        #message {
+            margin-top: 20px;
+            font-size: 1.5em;
+            color: #ff5722;
+            animation: bounce 1s ease-in-out;
+        }
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        input[type="text"] {
+            font-size: 1.5em;
+            padding: 10px;
+            border: 2px solid #e5383b;
+            border-radius: 5px;
+            outline: none;
+            transition: box-shadow 0.3s;
+            animation: popIn 0.5s ease;
+        }
+        input[type="text"]:focus {
+            box-shadow: 0 0 10px #e5383b;
+        }
+        button {
+            font-size: 1.5em;
+            padding: 10px 20px;
+            background-color: #e5383b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            animation: scaleUp 1s ease-in-out;
+        }
+        button:hover {
+            background-color: #d12f32;
+            transform: scale(1.1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes slideIn {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
+        }
+        @keyframes popIn {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        @keyframes scaleUp {
+            from { transform: scale(0.8); }
+            to { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Word Guessing Game</h1>
+    <div id="game-container">
+        <p id="word">_ _ _ _ _</p>
+        <p>Lives Remaining: <span id="lives">6</span></p>
+        <p>Guessed Letters: <span id="guessed-letters">None</span></p>
+        <input type="text" id="guess-input" maxlength="1" placeholder="Enter a letter">
+        <button onclick="makeGuess()">Guess</button>
+        <p id="message"></p>
+    </div>
+
+    <script>
+        const words = ["apple", "banana", "cherry", "grape", "orange", "peach", "melon"];
+        const secretWord = words[Math.floor(Math.random() * words.length)];
+        const guessedLetters = new Set();
+        let lives = 6;
+
+        function displayWord() {
+            const display = secretWord.split('').map(letter => 
+                guessedLetters.has(letter) ? letter : '_'
+            ).join(' ');
+            const wordElement = document.getElementById('word');
+            wordElement.textContent = display;
+            wordElement.classList.remove('fadeIn');
+            void wordElement.offsetWidth; // Trigger reflow for re-animation
+            wordElement.classList.add('fadeIn');
+            return display;
+        }
+
+        function updateGuessedLetters() {
+            const guessed = Array.from(guessedLetters).join(', ') || 'None';
+            document.getElementById('guessed-letters').textContent = guessed;
+        }
+
+        function makeGuess() {
+            const input = document.getElementById('guess-input');
+            const guess = input.value.toLowerCase();
+            input.value = '';
+            const messageElement = document.getElementById('message');
+            messageElement.textContent = '';
+
+            if (!guess || guess.length !== 1 || !/[a-z]/.test(guess)) {
+                messageElement.textContent = 'Please enter a valid letter.';
+                return;
+            }
+
+            if (guessedLetters.has(guess)) {
+                messageElement.textContent = 'You already guessed that letter.';
+                return;
+            }
+
+            guessedLetters.add(guess);
+            updateGuessedLetters();
+
+            if (secretWord.includes(guess)) {
+                messageElement.textContent = `Good job! ${guess} is in the word.`;
+                if (!displayWord().includes('_')) {
+                    messageElement.textContent = `🎉 Congratulations! You guessed the word: ${secretWord} 🎉`;
+                    document.getElementById('guess-input').disabled = true;
+                }
+            } else {
+                lives -= 1;
+                document.getElementById('lives').textContent = lives;
+                messageElement.textContent = `Oops! ${guess} is not in the word.`;
+                if (lives === 0) {
+                    messageElement.textContent = `💀 Game over! The word was: ${secretWord}`;
+                    document.getElementById('guess-input').disabled = true;
+                }
+            }
+        }
+
+        displayWord();
+    </script>
+</body>
+</html>
